@@ -7,6 +7,7 @@ class Car(models.Model):
     registration_number = models.CharField(max_length=10, blank=False, unique=True)
     make = models.CharField(max_length=255, blank=False)
     model = models.CharField(max_length=255, blank=False)
+    photo = models.ImageField(upload_to='photos', blank=True) #, max_length=254)
 
     def __str__(self):
         """Returns a string with the car details."""
