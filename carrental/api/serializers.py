@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404 
 from .models import (Car, Reservation)
+import datetime
 
 
 class CarSerializer(serializers.ModelSerializer):
@@ -13,7 +14,6 @@ class CarSerializer(serializers.ModelSerializer):
 
 
 class ReservationSerializer(serializers.ModelSerializer):
-    car = CarSerializer()
 
     class Meta:
         model = Reservation
