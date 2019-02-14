@@ -1,9 +1,9 @@
 from django.shortcuts import render
 
 from rest_framework import generics
-from .serializers import CarSerializer
-from .models import Car
-from rest_framework.permissions import IsAuthenticated
+from .serializers import (CarSerializer, ReservationSerializer)
+from .models import (Car, Reservation)
+from rest_framework.permissions import (IsAuthenticated, IsAdminUser)
 
 
 class CarCreateView(generics.ListCreateAPIView):
@@ -24,4 +24,25 @@ class CarDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = Car.objects.all()
     serializer_class = CarSerializer
+
+
+
+class ReservationCreateView(generics.ListCreateAPIView):
+    """Defines the reservation making functionality of our rest api."""
+    queryset = Reservation.objects.all()
+    serializer_class = ReservationSerializer
+
+    def get_queryset(self):
+        return Reservation.objects.all()
+
+    def perform_create(self, serializer):
+        """Save the post data when making a new reservation."""
+        serializer.save()
+
+
+class ReservationDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    """This class handles the http GET, PUT and DELETE requests."""
+
+    queryset = Reservation.objects.all()
+    serializer_class = ReservationSerializer
 
