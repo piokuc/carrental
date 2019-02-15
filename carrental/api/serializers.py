@@ -23,10 +23,12 @@ class ReservationSerializer(serializers.ModelSerializer):
         """
         Validate reservation:
         - check that start of reservation is before its end,
-        - cancellation is allowed only before reservation starts
+        - reservation allowed for up to 3 days only,
+        - cancellation is allowed only before reservation starts,
         - check the car is no already reserved fgor the dates.
         """
         start, end = data['start'], data['end']
+
         if start > end:
             raise serializers.ValidationError("end must occur after start")
 
