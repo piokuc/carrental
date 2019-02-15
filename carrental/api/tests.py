@@ -84,6 +84,7 @@ class CarViewTestCase(TestCase):
 
         response_content = json.loads(response.content)
         self.assertEqual(response_content['available_now'], True)
+        self.assertEqual(response_content['currently_reserved_by'], None)
 
 
     def test_api_car_is_not_available_if_reserved(self):
@@ -103,6 +104,8 @@ class CarViewTestCase(TestCase):
 
         response_content = json.loads(response.content)
         self.assertEqual(response_content['available_now'], False)
+        self.assertEqual(response_content['available_now'], False)
+        self.assertEqual(response_content['currently_reserved_by'], TEST_USER)
 
 
 class ReservationModelTestCase(TestCase):
