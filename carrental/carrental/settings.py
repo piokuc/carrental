@@ -122,3 +122,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 MEDIA_ROOT = '/tmp/django_files/'
+
+# Pagination: https://www.django-rest-framework.org/api-guide/pagination/
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100
+}
