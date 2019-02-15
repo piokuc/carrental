@@ -1,5 +1,3 @@
-from django.shortcuts import render
-
 from rest_framework import generics
 from .serializers import (CarSerializer, ReservationSerializer)
 from .models import (Car, Reservation)
@@ -10,6 +8,7 @@ class CarCreateView(generics.ListCreateAPIView):
     """Defines the car create functionality of our rest api."""
     queryset = Car.objects.all()
     serializer_class = CarSerializer
+    #permission_classes = (IsAdminUser,)
 
     def get_queryset(self):
         return Car.objects.all()
@@ -24,13 +23,14 @@ class CarDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = Car.objects.all()
     serializer_class = CarSerializer
-
+    #permission_classes = (IsAdminUser,)
 
 
 class ReservationCreateView(generics.ListCreateAPIView):
     """Defines the reservation making functionality of our rest api."""
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+    #permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         return Reservation.objects.all()
@@ -45,4 +45,5 @@ class ReservationDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+    #permission_classes = (IsAuthenticated,)
 

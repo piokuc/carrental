@@ -8,6 +8,9 @@ from .models import (Car, Reservation)
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
+# Admin user
+TEST_ADMIN = 'piotr'
+TEST_PASSWORD = 'secret'
 
 class CarModelTestCase(TestCase):
     """
@@ -29,18 +32,18 @@ class CarModelTestCase(TestCase):
 
 
 class CarViewTestCase(TestCase):
-    """Test suite for the api views."""
+    """Test suite for the car api views."""
 
     def setUp(self):
         """Define the test client and other test variables."""
         self.client = APIClient()
+        self.client.login(username=TEST_ADMIN, password=TEST_PASSWORD)
         self.car_data = {'registration_number': 'APL 911H',
                          'make': 'Reliant Regal',
                          'model': 'Supervan II'}
-        self.response = self.client.post(
-            reverse('create'),
-            self.car_data,
-            format="json")
+        self.response = self.client.post(reverse('create'),
+                                         self.car_data,
+                                         format="json")
 
 
     def test_api_can_create_a_car(self):
