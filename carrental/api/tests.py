@@ -2,6 +2,7 @@ from django.urls import reverse
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
+from rest_framework.test import APIRequestFactory
 import datetime
 
 from .models import (Car, Reservation)
@@ -9,8 +10,9 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 # Admin user
-TEST_ADMIN = 'piotr'
+TEST_USER = 'piotr'
 TEST_PASSWORD = 'secret'
+TEST_EMAIL = "test@user.com"
 
 class CarModelTestCase(TestCase):
     """
@@ -36,8 +38,9 @@ class CarViewTestCase(TestCase):
 
     def setUp(self):
         """Define the test client and other test variables."""
+        self.test_user = get_user_model().objects.create_superuser(TEST_USER, TEST_EMAIL, TEST_PASSWORD)
         self.client = APIClient()
-        self.client.login(username=TEST_ADMIN, password=TEST_PASSWORD)
+        self.client.login(username=TEST_USER, password=TEST_PASSWORD)
         self.car_data = {'registration_number': 'APL 911H',
                          'make': 'Reliant Regal',
                          'model': 'Supervan II'}
@@ -78,8 +81,9 @@ class ReservationModelTestCase(TestCase):
     """
 
     def setUp(self):
-        self.user = User.objects.create_user('test@example.com', 'testuser', 'testpassword')
-        self.user.save()
+        self.user = get_user_model().objects.create_user(TEST_USER, TEST_EMAIL, TEST_PASSWORD)
+        self.client = APIClient()
+        self.client.login(username=TEST_USER, password=TEST_PASSWORD)
         self.car = Car(registration_number = '903X252',
                        make = "renault",
                        model = "megane")
