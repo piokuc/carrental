@@ -21,20 +21,24 @@ class ReservationSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """
-        Check that start is before end.
+        Validate reservation:
+        - check that start of reservation is before its end,
+        - cancellation is allowed only before reservation starts
+        - check the car is no already reserved fgor the dates.
         """
-        if data['start'] > data['end']:
+        start, end = data['start'], data['end']
+        if start > end:
             raise serializers.ValidationError("end must occur after start")
 
-        if data['end'] > data['start'] + datetime.timedelta(days=3):
+        if end > start + datetime.timedelta(days=3):
             raise serializers.ValidationError("a car can only be reserved for up to 3 days")
 
-        if data['cancelled'] and datetime.today() >= data['start']:
+        if data['cancelled'] and datetime.today() >= start:
             raise serializers.ValidationError("reservation can only be cancelled before it starts")
 
         car_reservations = Reservation.objects.all().filter(car=data['car'])
-        if (len(car_reservations.filter(start__range=[data['start'], data['end']])) > 0
-            or len(car_reservations.filter(end__range=[data['start'], data['end']])) > 0):
+        if (len(car_reservations.filter(start__range=[start, end])) > 0
+            or len(car_reservations.filter(end__range=[start, end])) > 0):
             raise serializers.ValidationError("the car is already reserved during the chosen period")
 
         return data
