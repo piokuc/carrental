@@ -7,10 +7,17 @@ import datetime
 class CarSerializer(serializers.ModelSerializer):
     """Serializer to map the Car model instance into JSON format."""
 
+    available_now  = serializers.SerializerMethodField()
+
     class Meta:
         """Meta class to map serializer's fields with the model fields."""
         model = Car
-        fields = ('id', 'registration_number', 'make', 'model', 'photo')
+        fields = ('id', 'registration_number', 'make', 'model', 'available_now', 'photo')
+
+    def get_available_now(self, car):
+        reservations = Reservation.objects.filter(car=car)
+        today = datetime.datetime.now()
+        return reservations.filter(start__lte=today, end__gte=today).count() == 0
 
 
 class ReservationSerializer(serializers.ModelSerializer):

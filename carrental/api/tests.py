@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework.test import APIRequestFactory
 import datetime
+import json
 
 from .models import (Car, Reservation)
 from django.contrib.auth import get_user_model
@@ -74,6 +75,35 @@ class CarViewTestCase(TestCase):
         self.assertEquals(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
+    def test_api_car_is_available_if_no_reservations(self):
+        car = Car.objects.get()
+        response = self.client.get(reverse('details', kwargs={'pk': car.id}),
+                                   format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_content = json.loads(response.content)
+        self.assertEqual(response_content['available_now'], True)
+
+
+    def test_api_car_is_not_available_if_reserved(self):
+        """
+        Reserve a car from today to tomorrow, then check it is not availale.
+        """
+        car = Car.objects.get()
+        reservation = Reservation(customer = self.test_user,
+                                  car = car,
+                                  start = datetime.date.today(),
+                                  end = datetime.date.today() + datetime.timedelta(days=1),
+                                  cancelled = False)
+        reservation.save()
+
+        response = self.client.get(reverse('details', kwargs={'pk': car.id}), format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_content = json.loads(response.content)
+        self.assertEqual(response_content['available_now'], False)
+
 
 class ReservationModelTestCase(TestCase):
     """
@@ -94,7 +124,6 @@ class ReservationModelTestCase(TestCase):
                                        start = datetime.date.today(),
                                        end = datetime.date.today() + datetime.timedelta(days=1),
                                        cancelled = False)
-
 
         old_count = Reservation.objects.count()
         self.reservation.save()
