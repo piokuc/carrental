@@ -29,4 +29,12 @@ class ReservationSerializer(serializers.ModelSerializer):
         if data['end'] > data['start'] + datetime.timedelta(days=3):
             raise serializers.ValidationError("a car can only be reserved for up to 3 days")
 
+        if data['cancelled'] and datetime.today() >= data['start']:
+            raise serializers.ValidationError("reservation can only be cancelled before it starts")
+
+        car_reservations = Reservation.objects.all().filter(car=data['car'])
+        if (len(car_reservations.filter(start__range=[data['start'], data['end']])) > 0
+            or len(car_reservations.filter(end__range=[data['start'], data['end']])) > 0):
+            raise serializers.ValidationError("the car is already reserved during the chosen period")
+
         return data

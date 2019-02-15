@@ -110,3 +110,13 @@ class ReservationModelTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertContains(response, self.reservation.id)
+
+
+    def test_api_does_not_allow_duplicated_car_reservation(self):
+        reservation_data = dict(customer = self.user.pk,
+                                car = self.car.pk,
+                                start = datetime.date.today() + datetime.timedelta(days=1),
+                                end = datetime.date.today() + datetime.timedelta(days=2),
+                                cancelled = False)
+        response = self.client.post(reverse('make_reservation'), reservation_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
