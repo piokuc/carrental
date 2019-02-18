@@ -17,6 +17,9 @@ class Car(models.Model):
 
 
 class Reservation(models.Model):
+    """
+    Represents a reservation.
+    """
     customer = models.ForeignKey(get_user_model(),
                                  on_delete=models.PROTECT,
                                  related_name='reservations')

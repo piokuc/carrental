@@ -5,7 +5,9 @@ import datetime
 
 
 class CarSerializer(serializers.ModelSerializer):
-    """Serializer to map the Car model instance into JSON format."""
+    """
+    Serializer to map the Car model instance into JSON format.
+    """
 
     available_now = serializers.SerializerMethodField()
     currently_reserved_by = serializers.SerializerMethodField()
@@ -33,6 +35,10 @@ class CarSerializer(serializers.ModelSerializer):
 
 
 class ReservationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Reservation objects.
+    Converts from and to JSON, validates new reservations.
+    """
 
     class Meta:
         model = Reservation
@@ -44,7 +50,7 @@ class ReservationSerializer(serializers.ModelSerializer):
         - check that start of reservation is before its end,
         - reservation allowed for up to 3 days only,
         - cancellation is allowed only before reservation starts,
-        - check the car is no already reserved fgor the dates.
+        - check the car is not already reserved for the dates.
         """
         start, end = data['start'], data['end']
 
@@ -52,14 +58,14 @@ class ReservationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("end must occur after start")
 
         if end > start + datetime.timedelta(days=3):
-            raise serializers.ValidationError("a car can only be reserved for up to 3 days")
+            raise serializers.ValidationError("car can only be reserved for up to 3 days")
 
         if data['cancelled'] and datetime.today() >= start:
             raise serializers.ValidationError("reservation can only be cancelled before it starts")
 
         car_reservations = Reservation.objects.all().filter(car=data['car'])
-        if (len(car_reservations.filter(start__range=[start, end])) > 0
-            or len(car_reservations.filter(end__range=[start, end])) > 0):
+        if (car_reservations.filter(start__range=[start, end]).count() > 0
+            or car_reservations.filter(end__range=[start, end]).count() > 0):
             raise serializers.ValidationError("the car is already reserved during the chosen period")
 
         return data

@@ -4,13 +4,15 @@ from .models import (Car, Reservation)
 from rest_framework.permissions import (IsAuthenticated, IsAdminUser)
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
-from django.http import HttpResponse
+from django.http import (HttpResponse, HttpResponseNotFound, HttpResponseForbidden)
 from reportlab.pdfgen import canvas
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 
 class CarCreateView(generics.ListCreateAPIView):
-    """Defines the car create functionality of our rest api."""
+    """
+    Defines the car create functionality of our REST API.
+    """
     queryset = Car.objects.all()
     serializer_class = CarSerializer
     permission_classes = (IsAdminUser,)
@@ -24,7 +26,9 @@ class CarCreateView(generics.ListCreateAPIView):
 
 
 class CarDetailsView(generics.RetrieveUpdateDestroyAPIView):
-    """This class handles the http GET, PUT and DELETE requests."""
+    """
+    This class handles the http GET, PUT and DELETE requests.
+    """
 
     queryset = Car.objects.all()
     serializer_class = CarSerializer
@@ -32,7 +36,9 @@ class CarDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ReservationCreateView(generics.ListCreateAPIView):
-    """Defines the reservation making functionality of our rest api."""
+    """
+    Defines the reservation making functionality of our rest api.
+    """
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
     permission_classes = (IsAuthenticated,)
@@ -46,7 +52,9 @@ class ReservationCreateView(generics.ListCreateAPIView):
 
 
 class ReservationDetailsView(generics.RetrieveUpdateDestroyAPIView):
-    """This class handles the http GET, PUT and DELETE requests."""
+    """
+    This class handles the http GET, PUT and DELETE requests.
+    """
 
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
@@ -54,6 +62,9 @@ class ReservationDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 def generate_contract(reservation):
+    """
+    Generates PDF contract document for a reservation.
+    """
     # Create the HttpResponse object with the appropriate PDF headers.
     response = HttpResponse(content_type='application/pdf')
     disposition = 'attachment; filename="car_reservation_no_%s.pdf"'.format(reservation.id)
@@ -80,6 +91,14 @@ def generate_contract(reservation):
 @login_required
 @api_view(['GET'])
 def pdf_contract_view(request, pk):
+    """
+    Generate PDF contract for the given reservation ID.
+    Check the authenticated user is staff or the reservation's customer.
+    """
     reservation = get_object_or_404(Reservation, pk=pk)
+
+    if request.user != reservation.customer and not request.user.is_staff:
+        return HttpResponseForbidden("Forbidden") 
+
     response = generate_contract(reservation)
     return response

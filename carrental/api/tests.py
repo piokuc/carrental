@@ -13,7 +13,11 @@ User = get_user_model()
 # Admin user
 TEST_USER = 'piotr'
 TEST_PASSWORD = 'secret'
-TEST_EMAIL = "test@user.com"
+TEST_EMAIL = "piotr@carrental.com"
+
+TEST_USER2 = 'peter'
+TEST_PASSWORD2 = 'secret'
+TEST_EMAIL2 = "peter@carrental.com"
 
 class CarModelTestCase(TestCase):
     """
@@ -152,3 +156,48 @@ class ReservationModelTestCase(TestCase):
                                 cancelled = False)
         response = self.client.post(reverse('make_reservation'), reservation_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class PDFGenerationModelTestCase(TestCase):
+    """
+    Test suite for the PDF Contract view
+    """
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(TEST_USER, TEST_EMAIL, TEST_PASSWORD)
+        self.user2 = get_user_model().objects.create_user(TEST_USER2, TEST_EMAIL2, TEST_PASSWORD2)
+        self.client = APIClient()
+        self.client.login(username=TEST_USER, password=TEST_PASSWORD)
+        self.car = Car(registration_number = '903X252',
+                       make = "renault",
+                       model = "megane")
+        self.car.save()
+
+        self.reservation = Reservation(customer = self.user,
+                                       car = self.car,
+                                       start = datetime.date.today(),
+                                       end = datetime.date.today() + datetime.timedelta(days=1),
+                                       cancelled = False)
+
+        self.reservation.save()
+
+
+    def test_api_can_get_a_pdf_contract(self):
+        """Test the PDF contract can be retrieved."""
+        response = self.client.get(reverse('pdf_contracts', kwargs={'pk': self.reservation.id}),
+                                   format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+
+
+    def test_api_does_not_give_a_pdf_contract_to_wrong_user(self):
+        """
+        Test the PDF contract cannot be retrieved by someone else than the reservations's customer.
+        """
+        self.client.login(username=TEST_USER2, password=TEST_PASSWORD2)
+
+        response = self.client.get(reverse('pdf_contracts', kwargs={'pk': self.reservation.id}),
+                                   format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
