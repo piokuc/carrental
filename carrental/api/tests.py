@@ -164,7 +164,7 @@ class PDFGenerationModelTestCase(TestCase):
     """
 
     def setUp(self):
-        self.user = get_user_model().objects.create_user(TEST_USER, TEST_EMAIL, TEST_PASSWORD)
+        self.user = get_user_model().objects.create_superuser(TEST_USER, TEST_EMAIL, TEST_PASSWORD)
         self.user2 = get_user_model().objects.create_user(TEST_USER2, TEST_EMAIL2, TEST_PASSWORD2)
         self.client = APIClient()
         self.client.login(username=TEST_USER, password=TEST_PASSWORD)
@@ -183,7 +183,7 @@ class PDFGenerationModelTestCase(TestCase):
 
 
     def test_api_can_get_a_pdf_contract(self):
-        """Test the PDF contract can be retrieved."""
+        """Test the PDF contract can be retrieved by staff."""
         response = self.client.get(reverse('pdf_contracts', kwargs={'pk': self.reservation.id}),
                                    format="json")
 
@@ -193,7 +193,7 @@ class PDFGenerationModelTestCase(TestCase):
 
     def test_api_does_not_give_a_pdf_contract_to_wrong_user(self):
         """
-        Test the PDF contract cannot be retrieved by someone else than the reservations's customer.
+        Test the PDF contract cannot be retrieved by non staff users.
         """
         self.client.login(username=TEST_USER2, password=TEST_PASSWORD2)
 

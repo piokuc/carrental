@@ -97,7 +97,7 @@ def pdf_contract_view(request, pk):
     """
     reservation = get_object_or_404(Reservation, pk=pk)
 
-    if request.user != reservation.customer and not request.user.is_staff:
+    if not request.user.is_staff:
         return HttpResponseForbidden("Forbidden") 
 
     response = generate_contract(reservation)
